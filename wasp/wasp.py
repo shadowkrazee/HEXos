@@ -166,12 +166,13 @@ class Manager():
 
     def register_defaults(self):
         """Register the default applications."""
-        self.register('apps.clock.ClockApp', True, no_except=True)
+        self.register('apps.hexos_binary_clock.HexosBinaryClockApp', True, no_except=True)
         self.register('apps.steps.StepCounterApp', True, no_except=True)
         self.register('apps.stopwatch.StopwatchApp', True, no_except=True)
         self.register('apps.heart.HeartApp', True, no_except=True)
 
         self.register('apps.faces.FacesApp', no_except=True)
+        self.register('apps.polygons.PolygonsApp', no_except=True)
         self.register('apps.settings.SettingsApp', no_except=True)
         self.register('apps.software.SoftwareApp', no_except=True)
 

@@ -395,7 +395,6 @@ class Draw565(object):
         Example:
 
         .. code-block:: python
-
             draw = wasp.watch.drawable
             draw.line(0, 120, 240, 240, 0xf800)
 
@@ -522,3 +521,93 @@ class Draw565(object):
         b = bm - step if bm > step else 0
 
         return (r | g | b)
+
+    @micropython.viper
+    def regular_polygon(self, cX: int, cY: int, radius: int, sides: int, offset=0, strokeColor=65535, strokeWidth=2, fillColor=None):
+        """Draw a regular polygon with the given number of sides within a circle of a given radius around a given center point.
+
+        Includes parameters for orientation, stroke color, stroke width, and fill color.
+
+        Orientation is given as an angle in degrees, relative to vertical.
+        The first side of the polygon will be drawn at this angle.
+
+
+        Example:
+
+        .. code-block:: python
+
+            draw = wasp.watch.drawable
+            draw.regular_polygon()
+
+        :param cX: X Coordinate of the center point
+        :param cY: Y Coordinate of the center point
+        :param radius: Radius of the outside circle
+        :param sides: Number of desired sides
+        :param offset: Offset angle in degrees, relative to vetical
+        :param strokeColor: Color of the polygon's outline
+        :param strokeWidth: Width of the outline in pixels
+        :param fillColor: Color of the polygon's interior
+        """
+        interiorAngle =  ((sides - 2) * 180) / sides
+        theta = interiorAngle / 2
+        exteriorAngle = 360 / sides
+        # Half the length of one side of our polygon
+        chordLength = 2 * math.cos(math.radians(theta)) * radius
+        angle = offset
+        # Find the start point for our first chord
+        startX, startY = self.rel_pos(cX, cY, self.offset_angle(theta + offset, 180), radius)
+        # DEBUG centerline!
+        # self.line(cX, cY, startX, startY, strokeWidth, 31 << 11)
+        strokes = []
+        # For each side, take the start point, find the end point, and store the lines for later use
+        for i in range(0, sides):
+            endX, endY = self.rel_pos(startX, startY, angle, chordLength)
+            strokes.append((startX, startY, endX, endY) if startY > endY else (endX, endY, startX, startY))
+            angle = self.offset_angle(angle, exteriorAngle)
+            startX, startY = endX, endY
+        
+        if fillColor is not None:
+            # Establish the top and bottom of our polygon
+            hi = min([min([s[1], s[3]]) for s in strokes])
+            lo = max([max([s[1], s[3]]) for s in strokes])
+            inLine = lambda p, y: (min([p[1], p[3]])) <= y and y <=(max([p[1], p[3]]))
+            # Fill the polygon using lines "strokeWidth" wide
+            linePair = []
+            for y in range(hi + strokeWidth // 2, lo + strokeWidth // 2, strokeWidth):
+                if not len(linePair) == 2 or not inLine(linePair[0], y) or not inLine(linePair[1], y):
+                    # Find the two relevant lines for this y value
+                    linePair = [s for s in strokes if inLine(s, y)]
+                    # If two lines aren't found, we must be done
+                    if len(linePair) != 2:
+                        break
+                xA = abs(round(self.findX(linePair[0], y)))
+                xB = abs(round(self.findX(linePair[1], y)))
+                self.line(xA, y, xB, y, strokeWidth, fillColor)
+
+        # Draw the outline
+        
+        for x1,y1,x2,y2 in strokes:
+            self.line(x1, y1, x2, y2, strokeWidth, strokeColor)
+            
+     
+
+    # Finds a relative position from the given point, in the given direction, the given distance away.
+    def rel_pos(self, x1, y1, d ,l):
+        d = math.radians(d)
+        x2 = round(x1 + math.sin(d) * l)
+        y2 = round(y1 + math.cos(d) * l)
+        return (x2, y2)
+
+    def offset_angle(self, angle, add):
+        sum = angle + add
+        result = sum if sum <= 360 else sum - 360
+        return result
+
+    def findX(self, points: tuple, yVal: int):
+        x = points[0]
+        try:
+            slope = lambda p: (p[3] - p[1]) / (p[2] - p[0])
+            x = (yVal-points[1]) / slope(points) + points[0]
+        except ZeroDivisionError:
+            pass
+        return x
