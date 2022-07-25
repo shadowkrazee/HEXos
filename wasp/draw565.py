@@ -522,7 +522,7 @@ class Draw565(object):
 
         return (r | g | b)
 
-    @micropython.viper
+    @micropython.native
     def regular_polygon(self, cX: int, cY: int, radius: int, sides: int, offset=0, strokeColor=65535, strokeWidth=2, fillColor=None):
         """Draw a regular polygon with the given number of sides within a circle of a given radius around a given center point.
 
