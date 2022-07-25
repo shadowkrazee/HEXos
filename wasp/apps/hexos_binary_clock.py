@@ -18,19 +18,25 @@ MONTH = 'JanFebMarAprMayJunJulAugSepOctNovDec'
 class HexosBinaryClockApp():
     """Simple digital clock application."""
     NAME = 'HEXos Binary Clock'
-    ORANGE = (31 << 11) + (40 << 5)
-    YELLOW = (30 << 11) + (61 << 5)
 
-    def foreground(self, radius=30):
+    def foreground(self, radius=30, theme="HEXos"):
         """Activate the application.
 
         Configure the status bar, redraw the display and request a periodic
         tick callback every second.
         """
-        wasp.system.bar.clock = True
         self._radius = radius
+        if theme == "MONO":
+            self.s_color = (29 << 11) + (59 << 5) + (29) # L_GRAY # MONOCHROME
+            self.f_color = (9 << 11) + (18 << 5) + (9) # D_GRAY # MONOCHROME
+        else:
+            self.s_color = wasp.system.theme('bright') #D_AMBER # HEXos
+            self.f_color = wasp.system.theme('mid') # WARM_GRAY # HEXos
+        self.bg = wasp.system.theme('bg')
+            
         self._draw(True)
         
+        wasp.system.request_event(wasp.EventMask.TOUCH)
         wasp.system.request_tick(1000)
 
     def sleep(self):
@@ -70,6 +76,10 @@ class HexosBinaryClockApp():
 
         return '{} {} {}'.format(now[2], month, now[0])
 
+    def touch(self, event):
+        wasp.system.bar.clock = False if wasp.system.bar.clock else True
+        self._draw(True)
+
     def _draw(self, redraw=False):
         """Draw or lazily update the display.
 
@@ -79,7 +89,9 @@ class HexosBinaryClockApp():
         """
         draw = wasp.watch.drawable
         now = wasp.watch.rtc.get_localtime()
-        wasp.system.bar.update()
+        if redraw:
+            draw.fill(self.bg)
+            wasp.system.bar.draw()
 
         # Draw the changeable parts of the watch face
         # Colon blinks every second
@@ -90,7 +102,7 @@ class HexosBinaryClockApp():
         # If the hour changes, redraw the left hex and the dateString
         if redraw or self._hh != now[3]:
             self._draw_hours(draw, now[3])
-            draw.set_color(self.ORANGE)
+            draw.set_color(self.s_color, self.bg)
             draw.string(self._day_string(now), 0, 200, width=240)
             draw.set_color(0)
 
@@ -99,34 +111,34 @@ class HexosBinaryClockApp():
         self._mm = now[4]
 
     def _draw_colon(self, draw, ss):
-        fill = None if ss % 2 == 0 else self.ORANGE
+        fill = self.bg if ss % 2 == 0 else self.f_color
         # Fill the colon area with black and redraw the colon
         r = 8
-        draw.fill(0, 115 - r // 2, 95 - r // 2, r * 2, 40 + (r * 2))
-        draw.regular_polygon(120, 100, 8, 6, 0, self.YELLOW, 2, fill)
-        draw.regular_polygon(120, 140, 8, 6, 0, self.YELLOW, 2, fill)
+        draw.fill(self.bg, 115 - r // 2, 95 - r // 2, round(r * 2.5), 45 + (r * 2))
+        draw.regular_polygon(120, 100, 8, 6, 0, self.s_color, 2, fill)
+        draw.regular_polygon(120, 140, 8, 6, 0, self.s_color, 2, fill)
         pass
 
     def _draw_minutes(self, draw, mm):
         r = self._radius
-        draw.fill(0,round(185 - r * 1.6), round(120 - r * 1.8), 8 + r*3, 18 + r*3)
+        draw.fill(self.bg,round(185 - r * 1.6), round(120 - r * 1.8), 8 + r*3, 18 + r*3)
         for i, angle in enumerate(range(360, 0, (-360//6))):
             # dump out a binary string for the current minute value
-            bits = "{:06b}".format(mm)
-            fill = 0 if (bits[::-1])[i] == "0" else self.ORANGE
+            bits = "{:06b}".format(mm)[::-1]
+            fill = self.bg if (bits)[i] == "0" else self.f_color
             x, y = draw.rel_pos(185,120,draw.offset_angle(angle, 150), r)
             # draw.line(185, 120, x, y, 2, 31)
-            draw.regular_polygon(x, y, r, 3, draw.offset_angle(angle, 120), self.YELLOW, 3, fill)
+            draw.regular_polygon(x, y, r, 3, draw.offset_angle(angle, 120), self.s_color, 3, fill)
             # break
 
     def _draw_hours(self, draw, hh):
         r = self._radius
-        draw.fill(0,round(55 - r * 1.6), round(120 - r * 1.8), 8 + r*3, 18 + r*3)
+        draw.fill(self.bg,round(55 - r * 1.6), round(120 - r * 1.8), 8 + r*3, 18 + r*3)
         for i, angle in enumerate(range(360, 0, (-360//6))):
             # dump out a binary string for the current minute value
-            bits = "{:06b}".format(hh)
-            fill = 0 if (bits[::-1])[i] == "0" else self.ORANGE
+            bits = "{:06b}".format(hh)[::-1]
+            fill = self.bg if (bits)[i] == "0" else self.f_color
             x, y = draw.rel_pos(55,120,draw.offset_angle(angle, 150), r)
             # draw.line(55, 120, x, y, 2, 31)
-            draw.regular_polygon(x, y, r, 3, draw.offset_angle(angle, 120), self.YELLOW, 3, fill)
+            draw.regular_polygon(x, y, r, 3, draw.offset_angle(angle, 120), self.s_color, 3, fill)
             # break

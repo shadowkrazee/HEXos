@@ -122,8 +122,9 @@ class Manager():
                 b'\xff\xe0'     # battery-charging
                 b'\xe7\x3c'     # status-clock
                 b'\x7b\xef'     # notify-icon
-                b'\xff\xff'     # bright
-                b'\xbd\xb6'     # mid
+                b'\xfe\x8a'     # bright
+                b'\x6a\xc9'     # mid
+                b'\x29\x45'     # bg
                 b'\x39\xff'     # ui
                 b'\xff\x00'     # spot1
                 b'\xdd\xd0'     # spot2
@@ -589,6 +590,7 @@ class Manager():
                        "notify-icon",
                        "bright",
                        "mid",
+                       "bg",
                        "ui",
                        "spot1",
                        "spot2",
