@@ -126,6 +126,7 @@ class Draw565(object):
         self.set_color(0xffff)
         self.set_font(fonts.sans24)
 
+    @micropython.native
     def fill(self, bg=None, x=0, y=0, w=None, h=None):
         """Draw a solid colour rectangle.
 
@@ -389,6 +390,7 @@ class Draw565(object):
 
         return chunks
 
+    @micropython.native
     def line(self, x0, y0, x1, y1, width=1, color=None):
         """Draw a line between points (x0, y0) and (x1, y1).
 
@@ -548,9 +550,7 @@ class Draw565(object):
         :param strokeWidth: Width of the outline in pixels
         :param fillColor: Color of the polygon's interior
         """
-        interiorAngle =  ((sides - 2) * 180) / sides
-        theta = interiorAngle / 2
-        exteriorAngle = 360 / sides
+        theta = (((sides - 2) * 180) / sides) / 2
         # Half the length of one side of our polygon
         chordLength = 2 * math.cos(math.radians(theta)) * radius
         angle = offset
@@ -563,7 +563,7 @@ class Draw565(object):
         for i in range(0, sides):
             endX, endY = self.rel_pos(startX, startY, angle, chordLength)
             strokes.append((startX, startY, endX, endY) if startY > endY else (endX, endY, startX, startY))
-            angle = self.offset_angle(angle, exteriorAngle)
+            angle = self.offset_angle(angle, 360 / sides)
             startX, startY = endX, endY
         
         if fillColor is not None:
@@ -591,18 +591,19 @@ class Draw565(object):
             
      
 
-    # Finds a relative position from the given point, in the given direction, the given distance away.
+    @micropython.native
     def rel_pos(self, x1, y1, d ,l):
+        # Finds a relative position from the given point, in the given direction, the given distance away.
         d = math.radians(d)
-        x2 = round(x1 + math.sin(d) * l)
-        y2 = round(y1 + math.cos(d) * l)
-        return (x2, y2)
+        return (round(x1 + math.sin(d) * l), round(y1 + math.cos(d) * l))
 
+    @micropython.native
     def offset_angle(self, angle, add):
         sum = angle + add
         result = sum if sum <= 360 else sum - 360
         return result
 
+    @micropython.native
     def findX(self, points: tuple, yVal: int):
         x = points[0]
         try:

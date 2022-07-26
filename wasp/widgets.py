@@ -37,32 +37,24 @@ class BatteryMeter:
         icon = icons.battery_h
         draw = watch.drawable
 
-        batt_state = 'battery-charging' if watch.battery.charging() else 'battery'
-
         level = watch.battery.level()
         if level == self.level:
             return
         # Draw the battery icon
-        draw.blit(icon, 239-icon[1], 0, fg=wasp.system.theme(batt_state))
-        # Determine color to use for the indicator based on battery level
-        # Green channel is fully on (64) at 100% battery, decreases as the battery depletes
-        green = int(63 * (level / 100))
-        # Red channel works backwards, fully off at 100% battery, increasing as the battery depletes
-        red = int(31 * ((100 - level) / 100))
+        draw.blit(icon, 239-icon[1], 0, fg=wasp.system.theme('battery-charging' if watch.battery.charging() else 'battery'))
 
         # Cram the above values into a 16-bit RGB565 value
-        rgb = (red << 11) + (green << 5)
+        rgb = (int(31 * ((100 - level) / 100)) << 11) + (int(63 * (level / 100)) << 5)
             
         w = icon[1] - 8
-        x = 239 - 5 - w
-        h = 26
         # Fill the battery icon with the color
-        draw.fill(rgb, x, 3, w, h)
+        draw.fill(rgb, 239 - 5 - w, 3, w, 26)
 
         draw.set_font(fonts.sans18)
         draw.set_color(wasp.system.theme('bg'), rgb)
-        draw.string('{:02d}'.format(level), x, 7, w )
+        draw.string('{:02d}'.format(level), 239 - 5 - w, 7, w )
 
+        del rgb
         self.level = level
 
 class Clock:

@@ -14,7 +14,7 @@ class DefaultTheme():
     
     # Use this to format an int as hex for use here:
 
-webRGB = (115, 93, 82)
+webRGB = (28, 25, 23)
 to565 = int(31 * (webRGB[0] / 255)), int(63 * (webRGB[1] / 255)), int(31 * (webRGB[2] / 255))
 rgb =  (to565[0] << 11) + (to565[1] << 5) + (to565[2])
 '{:02X}'.format(rgb)
@@ -27,7 +27,7 @@ rgb =  (to565[0] << 11) + (to565[1] << 5) + (to565[2])
     NOTIFICATION_COLOR = 0x7BEF
     BRIGHT = 0xFE8A # DARK_AMBER # HEXos
     MID = 0x6AC9 # WARM_GRAY # HEXos
-    BG = 0x2945 # WARM_D_GRAY # HEXos
+    BG = 0x18C2 # WARM_D_GRAY # HEXos
     UI = 0x39FF
     SPOT1 = 0xFF00
     SPOT2 = 0xDDD0

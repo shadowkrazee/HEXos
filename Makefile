@@ -23,7 +23,8 @@ clean :
 		reloader/build-$(BOARD) reloader/src/boards/$(BOARD)/bootloader.h \
 		micropython/mpy-cross/build \
 		micropython/ports/nrf/build-$(BOARD)-s132 \
-		wasp/boards/$(BOARD)/watch.py
+		wasp/boards/$(BOARD)/watch.py\
+		build-pinetime
 
 # Avoid a recursive update... it grabs far too much
 submodules :
@@ -106,6 +107,10 @@ docs:
 sim:
 	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=.:wasp/boards/simulator:wasp \
 	$(PYTHON) -i wasp/boards/simulator/main.py
+
+profile:
+	PYTHONDONTWRITEBYTECODE=1 PYTHONPATH=.:wasp/boards/simulator:wasp \
+	$(PYTHON) -m memory_profiler wasp/boards/simulator/main.py
 
 ifeq ("$(origin K)", "command line")
   PYTEST_RESTRICT = -k '$(K)'
