@@ -11,18 +11,26 @@ class DefaultTheme():
     Import this file and extend the Theme class, only changing the variables.
     Export the resulting class as 'Theme'.
     serialize() should NEVER be overriden!
+    
+    # Use this to format an int as hex for use here:
+
+webRGB = (28, 25, 23)
+to565 = int(31 * (webRGB[0] / 255)), int(63 * (webRGB[1] / 255)), int(31 * (webRGB[2] / 255))
+rgb =  (to565[0] << 11) + (to565[1] << 5) + (to565[2])
+'{:02X}'.format(rgb)
     """
-    BLE_COLOR = 0x7bef
-    SCROLL_INDICATOR_COLOR = 0x7bef
-    BATTERY_COLOR = 0x7bef
-    BATTERY_CHARGING_COLOR = 0xffe0
-    SMALL_CLOCK_COLOR = 0xe73c
-    NOTIFICATION_COLOR = 0x7bef
-    BRIGHT = 0xffff
-    MID = 0xbdb6
-    UI = 0x39ff
-    SPOT1 = 0xff00
-    SPOT2 = 0xddd0
+    BLE_COLOR = 0x7BEF
+    SCROLL_INDICATOR_COLOR = 0x7BEF
+    BATTERY_COLOR = 0x7BEF
+    BATTERY_CHARGING_COLOR = 0xFFE0
+    SMALL_CLOCK_COLOR = 0xE73C
+    NOTIFICATION_COLOR = 0x7BEF
+    BRIGHT = 0xFE8A # DARK_AMBER # HEXos
+    MID = 0x6AC9 # WARM_GRAY # HEXos
+    BG = 0x18C2 # WARM_D_GRAY # HEXos
+    UI = 0x39FF
+    SPOT1 = 0xFF00
+    SPOT2 = 0xDDD0
     CONTRAST = 15
 
     def serialize(self) -> bytes:
@@ -38,6 +46,7 @@ class DefaultTheme():
             *split_bytes(self.NOTIFICATION_COLOR),
             *split_bytes(self.BRIGHT),
             *split_bytes(self.MID),
+            *split_bytes(self.BG),
             *split_bytes(self.UI),
             *split_bytes(self.SPOT1),
             *split_bytes(self.SPOT2),

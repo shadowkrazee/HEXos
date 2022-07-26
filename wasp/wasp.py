@@ -99,7 +99,6 @@ class Manager():
     The manager is expected to have a single system-wide instance
     which can be accessed via :py:data:`wasp.system` .
     """
-
     def __init__(self):
         self.app = None
 
@@ -122,8 +121,9 @@ class Manager():
                 b'\xff\xe0'     # battery-charging
                 b'\xe7\x3c'     # status-clock
                 b'\x7b\xef'     # notify-icon
-                b'\xff\xff'     # bright
-                b'\xbd\xb6'     # mid
+                b'\xfe\x8a'     # bright # DARK_AMBER # HEXos
+                b'\x6a\xc9'     # mid # WARM_GRAY # HEXos
+                b'\x18\xc2'     # bg # WARM_D_GRAY # HEXos
                 b'\x39\xff'     # ui
                 b'\xff\x00'     # spot1
                 b'\xdd\xd0'     # spot2
@@ -166,12 +166,14 @@ class Manager():
 
     def register_defaults(self):
         """Register the default applications."""
-        self.register('apps.clock.ClockApp', True, no_except=True)
+        # self.register('apps.clock.ClockApp', True, no_except=False)
+        self.register('apps.hexos_binary_clock.HexosBinaryClockApp', True, no_except=False)
         self.register('apps.steps.StepCounterApp', True, no_except=True)
         self.register('apps.stopwatch.StopwatchApp', True, no_except=True)
-        self.register('apps.heart.HeartApp', True, no_except=True)
+        # self.register('apps.heart.HeartApp', True, no_except=True)
 
         self.register('apps.faces.FacesApp', no_except=True)
+        # self.register('apps.polygons.PolygonsApp', no_except=True)
         self.register('apps.settings.SettingsApp', no_except=True)
         self.register('apps.software.SoftwareApp', no_except=True)
 
@@ -588,6 +590,7 @@ class Manager():
                        "notify-icon",
                        "bright",
                        "mid",
+                       "bg",
                        "ui",
                        "spot1",
                        "spot2",

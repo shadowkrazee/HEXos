@@ -37,32 +37,24 @@ class BatteryMeter:
         icon = icons.battery_h
         draw = watch.drawable
 
-        batt_state = 'battery-charging' if watch.battery.charging() else 'battery'
-
         level = watch.battery.level()
         if level == self.level:
             return
         # Draw the battery icon
-        draw.blit(icon, 239-icon[1], 0, fg=wasp.system.theme(batt_state))
-        # Determine color to use for the indicator based on battery level
-        # Green channel is fully on (64) at 100% battery, decreases as the battery depletes
-        green = int(63 * (level / 100))
-        # Red channel works backwards, fully off at 100% battery, increasing as the battery depletes
-        red = int(31 * ((100 - level) / 100))
+        draw.blit(icon, 239-icon[1], 0, fg=wasp.system.theme('battery-charging' if watch.battery.charging() else 'battery'))
 
         # Cram the above values into a 16-bit RGB565 value
-        rgb = (red << 11) + (green << 5)
+        rgb = (int(31 * ((100 - level) / 100)) << 11) + (int(63 * (level / 100)) << 5)
             
         w = icon[1] - 8
-        x = 239 - 5 - w
-        h = 26
         # Fill the battery icon with the color
-        draw.fill(rgb, x, 3, w, h)
+        draw.fill(rgb, 239 - 5 - w, 3, w, 26)
 
         draw.set_font(fonts.sans18)
-        draw.set_color(0, rgb)
-        draw.string('{:02d}'.format(level), x, 7, w )
+        draw.set_color(wasp.system.theme('bg'), rgb)
+        draw.string('{:02d}'.format(level), 239 - 5 - w, 7, w )
 
+        del rgb
         self.level = level
 
 class Clock:
@@ -101,7 +93,7 @@ class Clock:
 
             draw = wasp.watch.drawable
             draw.set_font(fonts.sans28)
-            draw.set_color(wasp.system.theme('status-clock'))
+            draw.set_color(wasp.system.theme('bright'), wasp.system.theme('bg'))
             draw.string(t1, 52, 4, 138)
 
         self.on_screen = now
@@ -127,21 +119,20 @@ class NotificationBar:
         can often be implemented (with less state) by the container.
         """
         draw = watch.drawable
+        bg = wasp.system.theme('bg')
         (x, y) = self._pos
 
         if wasp.watch.connected():
-            draw.blit(icons.blestatus, x, y, fg=wasp.system.theme('ble'))
+            draw.blit(icons.blestatus, x, y, fg=wasp.system.theme('mid'), bg=bg)
             if wasp.system.notifications:
-                draw.blit(icons.notification, x+22, y,
-                          fg=wasp.system.theme('notify-icon'))
+                draw.blit(icons.notification, x+22, y, fg=wasp.system.theme('notify-icon'), bg=bg)
             else:
-                draw.fill(0, x+22, y, 30, 32)
+                draw.fill(bg, x+22, y, 30, 32)
         elif wasp.system.notifications:
-            draw.blit(icons.notification, x, y,
-                      fg=wasp.system.theme('notify-icon'))
-            draw.fill(0, x+30, y, 22, 32)
+            draw.blit(icons.notification, x, y, fg=wasp.system.theme('notify-icon'), bg=bg)
+            draw.fill(bg, x+30, y, 22, 32)
         else:
-            draw.fill(0, x, y, 52, 32)
+            draw.fill(bg, x, y, 52, 32)
 
 class StatusBar:
     """Combo widget to handle notification, time and battery level."""
@@ -374,6 +365,7 @@ class Slider():
     def draw(self):
         """Draw the slider."""
         draw = watch.drawable
+        bg = wasp.system.theme('bg')
         x = self._x
         y = self._y
         color = self._color
@@ -389,28 +381,28 @@ class Slider():
 
         w = knob_x - x
         if w > 0:
-            draw.fill(0, x, y, w, _SLIDER_TRACK_Y1)
+            draw.fill(bg, x, y, w, _SLIDER_TRACK_Y1)
             if w > _SLIDER_KNOB_RADIUS:
-                draw.fill(0, x, y+_SLIDER_TRACK_Y1,
+                draw.fill(bg, x, y+_SLIDER_TRACK_Y1,
                           _SLIDER_KNOB_RADIUS, _SLIDER_TRACK_HEIGHT)
                 draw.fill(color, x+_SLIDER_KNOB_RADIUS, y+_SLIDER_TRACK_Y1,
                           w-_SLIDER_KNOB_RADIUS, _SLIDER_TRACK_HEIGHT)
             else:
-                draw.fill(0, x, y+_SLIDER_TRACK_Y1, w, _SLIDER_TRACK_HEIGHT)
-            draw.fill(0, x, y+_SLIDER_TRACK_Y2, w, _SLIDER_TRACK_Y1)
+                draw.fill(bg, x, y+_SLIDER_TRACK_Y1, w, _SLIDER_TRACK_HEIGHT)
+            draw.fill(bg, x, y+_SLIDER_TRACK_Y2, w, _SLIDER_TRACK_Y1)
 
         sx = knob_x + _SLIDER_KNOB_DIAMETER
         w = _SLIDER_WIDTH - _SLIDER_KNOB_DIAMETER - w
         if w > 0:
-            draw.fill(0, sx, y, w, _SLIDER_TRACK_Y1)
+            draw.fill(bg, sx, y, w, _SLIDER_TRACK_Y1)
             if w > _SLIDER_KNOB_RADIUS:
-                draw.fill(0, sx+w-_SLIDER_KNOB_RADIUS, y+_SLIDER_TRACK_Y1,
+                draw.fill(bg, sx+w-_SLIDER_KNOB_RADIUS, y+_SLIDER_TRACK_Y1,
                           _SLIDER_KNOB_RADIUS, _SLIDER_TRACK_HEIGHT)
                 draw.fill(light, sx, y+_SLIDER_TRACK_Y1,
                           w-_SLIDER_KNOB_RADIUS, _SLIDER_TRACK_HEIGHT)
             else:
-                draw.fill(0, sx, y+_SLIDER_TRACK_Y1, w, _SLIDER_TRACK_HEIGHT)
-            draw.fill(0, sx, y+_SLIDER_TRACK_Y2, w, _SLIDER_TRACK_Y1)
+                draw.fill(bg, sx, y+_SLIDER_TRACK_Y1, w, _SLIDER_TRACK_HEIGHT)
+            draw.fill(bg, sx, y+_SLIDER_TRACK_Y2, w, _SLIDER_TRACK_Y1)
 
     def update(self):
         self.draw()
@@ -514,6 +506,7 @@ class Stopwatch:
                 self.reset()
 
         if self._last_count != self.count:
+            bg = wasp.system.theme('bg')
             centisecs = self.count
             secs = centisecs // 100
             centisecs %= 100
@@ -529,7 +522,7 @@ class Stopwatch:
             draw.set_color(draw.lighten(wasp.system.theme('ui'), wasp.system.theme('contrast')))
             w = fonts.width(fonts.sans36, t1)
             draw.string(t1, 180-w, y)
-            draw.fill(0, 0, y, 180-w, 36)
+            draw.fill(bg, 0, y, 180-w, 36)
             draw.set_font(fonts.sans24)
             draw.string(t2, 180, y+18, width=46)
 
