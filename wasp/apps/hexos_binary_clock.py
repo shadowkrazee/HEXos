@@ -29,7 +29,7 @@ class HexosBinaryClockApp():
         self._radius = radius
         self.s_color = const(wasp.system.theme('bright')) #D_AMBER # HEXos
         self.f_color = const(wasp.system.theme('mid')) # WARM_GRAY # HEXos
-        self.bg = const(wasp.system.theme('bg'))
+        self.bg = const(wasp.system.theme('bg')) # WARM_D_GRAY # HEXos
             
         self._draw(True)
         
@@ -98,14 +98,12 @@ class HexosBinaryClockApp():
         # if the minute changes, redraw the right hex
         if redraw or self._mm != now[4]:
             self._draw_minutes(draw, now[4])
+            self._mm = now[4]
         # If the hour changes, redraw the left hex and the dateString
-        if redraw or self._mm == 0:
+        if redraw or self._hh != now[3]:
             self._draw_hours(draw, now[3])
             draw.set_color(self.s_color, self.bg)
             draw.string(self._day_string(now), 0, 200, width=240)
-
-        # Record the minute that is currently being displayed
-        self._mm = now[4]
 
     def _draw_colon(self, draw, ss):
         # Fill the colon area with black and redraw the colon
@@ -117,6 +115,7 @@ class HexosBinaryClockApp():
         del points
 
     def _draw_minutes(self, draw, mm):
+        self.mm = mm
         r = self._radius
         # draw.fill(self.bg,round(185 - r * 1.6), round(120 - r * 1.8), 8 + r*3, 18 + r*3)
         for i, angle in enumerate(range(0, 360, (360//6))):
@@ -126,6 +125,7 @@ class HexosBinaryClockApp():
             # break
 
     def _draw_hours(self, draw, hh):
+        self._hh = hh
         r = self._radius
         draw.fill(self.bg,round(55 - r * 1.6), round(120 - r * 1.8), 8 + r*3, 18 + r*3)
         for i, angle in enumerate(range(0, 360, (360//6))):
