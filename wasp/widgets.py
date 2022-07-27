@@ -41,7 +41,7 @@ class BatteryMeter:
         if level == self.level:
             return
         # Draw the battery icon
-        draw.blit(icon, 239-icon[1], 0, fg=wasp.system.theme('battery-charging' if watch.battery.charging() else 'battery'))
+        draw.blit(icon, 239-icon[1], 0, fg=wasp.system.theme('battery-charging' if watch.battery.charging() else 'battery'), bg=wasp.system.theme('bg'))
 
         # Cram the above values into a 16-bit RGB565 value
         rgb = (int(31 * ((100 - level) / 100)) << 11) + (int(63 * (level / 100)) << 5)
@@ -52,7 +52,7 @@ class BatteryMeter:
 
         draw.set_font(fonts.sans18)
         draw.set_color(wasp.system.theme('bg'), rgb)
-        draw.string('{:02d}'.format(level), 239 - 5 - w, 7, w )
+        draw.string('{:02d}'.format(level), 239 - 5 - w, 8, w )
 
         del rgb
         self.level = level
